@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         New userscript
+// @name         Beatsaver tools
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Hello World
+// @description  Beatsaver tools
 // @author       Dartv
-// @match        https://example.com/*
+// @match        https://beatsaver.com/*
 // @require      https://unpkg.com/react@17/umd/react.production.min.js
 // @require      https://unpkg.com/react-dom@17/umd/react-dom.production.min.js
 // @grant        none
