@@ -1,0 +1,11 @@
+// ==UserScript==
+// @name         New userscript
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  Hello World
+// @author       Dartv
+// @match        https://example.com/*
+// @require      https://unpkg.com/react@17/umd/react.production.min.js
+// @require      https://unpkg.com/react-dom@17/umd/react-dom.production.min.js
+// @grant        none
+// ==/UserScript==
