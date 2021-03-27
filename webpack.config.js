@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const { BannerPlugin } = require('webpack');
+const { BannerPlugin, WatchIgnorePlugin } = require('webpack');
 
 module.exports = {
   entry: './src/index.tsx',
@@ -9,7 +9,7 @@ module.exports = {
   mode: 'development',
   devtool: false,
   output: {
-    path: path.resolve('./dist'),
+    path: path.join(__dirname, 'dist'),
     filename: 'bundle.js',
   },
   externals: {
@@ -42,6 +42,9 @@ module.exports = {
     new BannerPlugin({
       banner: () => fs.readFileSync(path.join(__dirname, 'banner.txt'), 'utf8'),
       raw: true,
+    }),
+    new WatchIgnorePlugin({
+      paths: [/\.js$/],
     }),
   ],
 };

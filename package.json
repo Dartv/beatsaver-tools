@@ -8,6 +8,7 @@
     "lint": "npm run eslint -- src --ext .js,.jsx,.ts,.tsx",
     "lint:staged": "./node_modules/.bin/lint-staged",
     "build": "webpack --config webpack.config.js",
+    "build:watch": "npm run build -- --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "lint-staged": {
