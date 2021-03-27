@@ -37,12 +37,14 @@
     "fork-ts-checker-webpack-plugin": "^6.2.0",
     "husky": "^4.3.8",
     "lint-staged": "^10.5.4",
+    "terser-webpack-plugin": "^5.1.1",
     "typescript": "^4.2.3",
     "webpack": "^5.27.2",
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.13.10",
+    "evergreen-ui": "^5.1.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   }

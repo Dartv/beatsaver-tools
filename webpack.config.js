@@ -1,12 +1,13 @@
 const path = require('path');
 const fs = require('fs');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const { BannerPlugin, WatchIgnorePlugin } = require('webpack');
+const { WatchIgnorePlugin } = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   entry: './src/index.tsx',
   target: 'web',
-  mode: 'development',
+  mode: 'production',
   devtool: false,
   output: {
     path: path.join(__dirname, 'dist'),
@@ -18,6 +19,16 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        extractComments: {
+          banner: () => fs.readFileSync(path.join(__dirname, 'banner.txt'), 'utf8'),
+        },
+      }),
+    ],
   },
   module: {
     rules: [
@@ -38,10 +49,6 @@ module.exports = {
   plugins: [
     new ForkTsCheckerWebpackPlugin({
       typescript: { configFile: 'tsconfig.json' },
-    }),
-    new BannerPlugin({
-      banner: () => fs.readFileSync(path.join(__dirname, 'banner.txt'), 'utf8'),
-      raw: true,
     }),
     new WatchIgnorePlugin({
       paths: [/\.js$/],
