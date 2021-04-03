@@ -7,8 +7,10 @@ window.onload = () => {
   const root = document.createElement('div');
 
   root.setAttribute('id', 'bt-root');
+  root.setAttribute('class', 'navbar-item');
 
-  document.body.appendChild(root);
+  const navbar = document.querySelector('.navbar .navbar-end');
+  navbar?.prepend(root);
 
   ReactDOM.render(
     <App />,
