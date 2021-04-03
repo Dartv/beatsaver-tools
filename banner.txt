@@ -2,7 +2,8 @@
 // @name          Beatsaver tools
 // @namespace     http://tampermonkey.net/
 // @version       0.1
-// @description   Beatsaver tools
+// @description   Various beatsaver QOL features
+// @source        https://github.com/Dartv/beatsaver-tools
 // @author        Dartv
 // @match         https://beatsaver.com/*
 // @require       https://unpkg.com/react@17/umd/react.production.min.js
