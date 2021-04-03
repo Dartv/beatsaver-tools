@@ -17,3 +17,15 @@ export const getBeatmapIdFromImage = (
 ): string | null => node?.getAttribute('src')?.match(/\/(\w+)\./)?.[1] || null;
 
 export const isValidDate = (date: any): date is Date => !isNaN(date) && date instanceof Date;
+
+export const downloadFile = (name: string, data: BlobPart): void => {
+  const blob = new Blob([data], {
+    type: 'application/json',
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.setAttribute('download', name);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};

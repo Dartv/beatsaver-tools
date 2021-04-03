@@ -17,6 +17,7 @@ export const initialFilters = {
   maxDuration: '23:59:59',
   makePlaylist: false,
   excludedMappers: '',
+  playlistName: '',
   ...Object.values(Difficulty).reduce((acc, difficulty) => ({
     ...acc,
     [difficulty]: true,

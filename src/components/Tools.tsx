@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pane, IconButton, SideSheet, Heading, Paragraph, Tablist, Tab } from 'evergreen-ui';
+import { Pane, IconButton, SideSheet, Heading, Paragraph, Tablist, Tab, toaster } from 'evergreen-ui';
 import { useForm } from 'react-hook-form';
 
 import FiltersForm, { FiltersFormData } from './FiltersForm';
 import { Difficulty, initialFilters, FILTERS_KEY } from '../constants';
 import {
+  downloadFile,
   getBeatmapIdFromImage,
   getTextFromNode,
   parseIntFromNode,
@@ -35,7 +36,7 @@ const Tools: React.FC = () => {
   const filtersFormData = useRef<FiltersFormData>(getInitialFilters());
   const playlist = useRef<Set<string>>(new Set());
   const filter = (node: Element) => {
-    const formData = { ...initialFilters, ...filtersFormData.current };
+    const filters = { ...initialFilters, ...filtersFormData.current };
     const upvotes = parseIntFromNode(node.querySelector(`li[title="Upvotes"]`)) || initialFilters.minUpvotes;
     const downvotes = parseIntFromNode(node.querySelector(`li[title="Downvotes"]`)) || initialFilters.maxDownvotes;
     const downloads = parseIntFromNode(node.querySelector(`li[title="Downloads"]`)) || initialFilters.minDownloads;
@@ -43,25 +44,25 @@ const Tools: React.FC = () => {
     const duration = parseTimeFromNode(node.querySelector(`li[title="Beatmap Duration"]`)) || initialFilters.minDuration;
     const author = getTextFromNode(node.querySelector('.details > h2 > a')) || '';
     const hasDifficulty = Object.values(Difficulty).some(
-      difficulty => formData[difficulty] && node.querySelector(`.tag.${difficulty}`)
+      difficulty => filters[difficulty] && node.querySelector(`.tag.${difficulty}`)
     );
     const predicate = [
       hasDifficulty,
-      upvotes >= formData.minUpvotes,
-      downvotes <= formData.maxDownvotes,
-      downloads >= formData.minDownloads,
-      rating >= formData.minRating,
-      duration >= parseTimeToSeconds(formData.minDuration),
-      duration <= parseTimeToSeconds(formData.maxDuration),
-      !formData.excludedMappers.split(',').map(m => m.trim()).includes(author.toLowerCase()),
+      upvotes >= filters.minUpvotes,
+      downvotes <= filters.maxDownvotes,
+      downloads >= filters.minDownloads,
+      rating >= filters.minRating,
+      duration >= parseTimeToSeconds(filters.minDuration),
+      duration <= parseTimeToSeconds(filters.maxDuration),
+      !filters.excludedMappers.split(',').map(m => m.trim()).includes(author.toLowerCase()),
     ].every(Boolean);
 
     if (!predicate) {
       node.parentNode?.removeChild(node);
-    } else if (formData.makePlaylist) {
+    } else if (filters.makePlaylist) {
       const beatmapId = getBeatmapIdFromImage(node.querySelector('.cover img'));
 
-      if (beatmapId) {
+      if (beatmapId && beatmapId !== 'placeholder') {
         playlist.current.add(beatmapId);
       }
     }
@@ -70,21 +71,29 @@ const Tools: React.FC = () => {
     const nodes = Array.from(document.querySelectorAll('.beatmap-result:not(.beatmap-result-hidden)'));
     nodes.forEach(filter);
   };
-  const onSubmitFilters = () => {
-    filtersFormData.current = filtersForm.getValues();
+  const onSubmitFilters = (filters: FiltersFormData) => {
+    filtersFormData.current = filters;
 
     filterAll();
 
     observer.current?.disconnect();
     observer.current?.observe(document.documentElement, {
       subtree: true,
-      attributeFilter: ['class'],
+      attributeFilter: ['class', 'src'],
       attributeOldValue: true,
     });
 
-    localStorage.setItem(FILTERS_KEY, JSON.stringify(filtersFormData.current));
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
   };
-  const onFiltersSubmit = filtersForm.handleSubmit(onSubmitFilters);
+  const onFiltersSubmit = filtersForm.handleSubmit(() => {
+    const filters = filtersForm.getValues();
+
+    onSubmitFilters(filters);
+
+    if (filters.makePlaylist) {
+      toaster.notify('Playlist will be created when you click "stop"');
+    }
+  });
   const onFiltersStop = (e: React.SyntheticEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -92,37 +101,48 @@ const Tools: React.FC = () => {
     observer.current?.disconnect();
 
     if (playlist.current.size) {
-      const content = {
+      const formData = filtersForm.getValues();
+      const date = new Date();
+      const createdAt = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+      const playlistName = formData.playlistName || `Playlist created by Beatsaver Tools at ${createdAt}`;
+      const playlistData = {
         playlistTitle: 'test',
         playlistAuthor: 'Beatsaver Tools',
         playlistDescription: 'Playlist created by Beatsaver Tools',
         image: logo,
         songs: Array.from(playlist.current).map(hash => ({ hash })),
       };
-      const blob = new Blob([JSON.stringify(content)], {
-        type: 'application/json',
-      });
+      downloadFile(playlistName, JSON.stringify(playlistData));
 
-      window.saveAs(blob, 'test.json');
+      playlist.current.clear();
     }
   };
   const onFiltersReset = (e: React.SyntheticEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
+    playlist.current.clear();
+
     // can't use reset here because of the bug in react-hook-form
     Object.entries(initialFilters).forEach(([key, value]) => {
       filtersForm.setValue(key as keyof FiltersFormData, value);
     });
 
-    onSubmitFilters();
+    onSubmitFilters(filtersForm.getValues());
   };
 
   useEffect(() => {
     observer.current = new MutationObserver((mutations) => {
       mutations.forEach(({ type, target, oldValue }) => {
-        if (type === 'attributes' && oldValue === 'beatmap-result-hidden') {
-          filter(target as Element);
+        // beatsaver removes nodes from DOM when it is not visible
+        // luckily they set class from beatmap-result-hidden to beatmap-result when map is rendered
+        // beatsaver replaces src with placeholder while the map is loading
+        if (type === 'attributes' && oldValue === 'beatmap-result-hidden' || oldValue?.includes('placeholder')) {
+          const node = target.nodeName === 'IMG' ? (target as Element).closest('.beatmap-result') : target;
+
+          if (node) {
+            filter(node as Element);
+          }
         }
       });
     });
