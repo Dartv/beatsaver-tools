@@ -15,8 +15,11 @@ export const initialFilters = {
   minRating: 0,
   minDuration: '00:00:00',
   maxDuration: '23:59:59',
+  makePlaylist: false,
   ...Object.values(Difficulty).reduce((acc, difficulty) => ({
     ...acc,
     [difficulty]: true,
   }), {} as DifficultyFormData),
 };
+
+export const FILTERS_KEY = 'bt-filters';

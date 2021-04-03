@@ -3,17 +3,18 @@ import { Pane, IconButton, SideSheet, Heading, Paragraph, Tablist, Tab } from 'e
 import { useForm } from 'react-hook-form';
 
 import FiltersForm, { FiltersFormData } from './FiltersForm';
-import { Difficulty, initialFilters } from '../constants';
-import { parseIntFromNode, parseTimeFromNode, parseTimeToSeconds } from '../utils/common';
+import { Difficulty, initialFilters, FILTERS_KEY } from '../constants';
+import { getBeatmapIdFromImage, parseIntFromNode, parseTimeFromNode, parseTimeToSeconds } from '../utils/common';
 
 const tabs = ['Filters'];
 const descriptions = [
   'Pick settings below to filter maps based on'
 ];
+const logo = window.GM_getResourceURL('logo');
 
 const getInitialFilters = (): FiltersFormData => {
   try {
-    const state = localStorage.getItem('bt-filters') || '';
+    const state = localStorage.getItem(FILTERS_KEY) || '';
     return JSON.parse(state);
   } catch (err) {
     return initialFilters;
@@ -26,6 +27,7 @@ const Tools: React.FC = () => {
   const observer = useRef<MutationObserver>();
   const filtersForm = useForm<FiltersFormData>();
   const filtersFormData = useRef<FiltersFormData>(getInitialFilters());
+  const playlist = useRef<Set<string>>(new Set());
   const filter = (node: Element) => {
     const formData = { ...initialFilters, ...filtersFormData.current };
     const upvotes = parseIntFromNode(node.querySelector(`li[title="Upvotes"]`)) || initialFilters.minUpvotes;
@@ -48,6 +50,12 @@ const Tools: React.FC = () => {
 
     if (!predicate) {
       node.parentNode?.removeChild(node);
+    } else if (formData.makePlaylist) {
+      const beatmapId = getBeatmapIdFromImage(node.querySelector('.cover img'));
+
+      if (beatmapId) {
+        playlist.current.add(beatmapId);
+      }
     }
   };
   const filterAll = () => {
@@ -66,7 +74,7 @@ const Tools: React.FC = () => {
       attributeOldValue: true,
     });
 
-    localStorage.setItem('bt-filters', JSON.stringify(filtersFormData.current));
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(filtersFormData.current));
   };
   const onFiltersSubmit = filtersForm.handleSubmit(onSubmitFilters);
   const onFiltersStop = (e: React.SyntheticEvent) => {
@@ -74,6 +82,21 @@ const Tools: React.FC = () => {
     e.stopPropagation();
 
     observer.current?.disconnect();
+
+    if (playlist.current.size) {
+      const content = {
+        playlistTitle: 'test',
+        playlistAuthor: 'Beatsaver Tools',
+        playlistDescription: 'Playlist created by Beatsaver Tools',
+        image: logo,
+        songs: Array.from(playlist.current).map(hash => ({ hash })),
+      };
+      const blob = new Blob([JSON.stringify(content)], {
+        type: 'application/json',
+      });
+
+      window.saveAs(blob, 'test.json');
+    }
   };
   const onFiltersReset = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -103,7 +126,7 @@ const Tools: React.FC = () => {
     <>
       <SideSheet
         isShown={isShown}
-        onCloseComplete={() => setIsShown(!isShown)}
+        onCloseComplete={() => setIsShown(false)}
         containerProps={{
           display: 'flex',
           flex: '1',
@@ -143,11 +166,11 @@ const Tools: React.FC = () => {
         </Pane>
       </SideSheet>
       <IconButton
-        position="absolute"
-        top={75}
-        right={15}
-        icon={<img src="https://cdn.discordapp.com/emojis/448732050636275722.png?v=1" alt="Beat saber icon" />}
-        onClick={() => setIsShown(true)}
+        appearance="minimal"
+        icon={(
+          <img src={logo} alt="Beat saber icon" />
+        )}
+        onClick={() => setIsShown(!isShown)}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import { Button, Checkbox, TextInputField, Pane } from 'evergreen-ui';
+import { Button, Checkbox, TextInputField, Pane, FormField } from 'evergreen-ui';
 import React from 'react';
 import { Controller, UseFormMethods } from 'react-hook-form';
 
@@ -11,6 +11,7 @@ export interface FiltersFormData extends DifficultyFormData {
   minRating: number;
   minDuration: string;
   maxDuration: string;
+  makePlaylist: boolean;
 }
 
 interface FiltersFormProps extends UseFormMethods {
@@ -62,6 +63,7 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         min={0}
         ref={register({ valueAsNumber: true, min: 0 })}
         width={140}
+        marginRight={16}
       />
       <TextInputField
         label="Minimum rating"
@@ -114,6 +116,21 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         )}
       />
     ))}
+    <FormField label="Playlist">
+      <Controller
+        control={control}
+        name="makePlaylist"
+        defaultValue={initialState.makePlaylist}
+        render={({ onChange, value, ref }) => (
+          <Checkbox
+            label="Make a playlist?"
+            onChange={e => onChange(e.target.checked)}
+            checked={value}
+            ref={ref}
+          />
+        )}
+      />
+    </FormField>
     <Pane>
       <Button type="submit" marginRight={16}>Apply</Button>
       <Button

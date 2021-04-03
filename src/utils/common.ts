@@ -12,4 +12,8 @@ export const parseTimeFromNode = (node: Node | null): number => {
   return parseTimeToSeconds(`00:` + time);
 };
 
+export const getBeatmapIdFromImage = (
+  node: Element | null,
+): string | null => node?.getAttribute('src')?.match(/\/(\w+)\./)?.[1] || null;
+
 export const isValidDate = (date: any): date is Date => !isNaN(date) && date instanceof Date;
