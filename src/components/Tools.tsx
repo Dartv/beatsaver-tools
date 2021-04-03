@@ -4,7 +4,13 @@ import { useForm } from 'react-hook-form';
 
 import FiltersForm, { FiltersFormData } from './FiltersForm';
 import { Difficulty, initialFilters, FILTERS_KEY } from '../constants';
-import { getBeatmapIdFromImage, parseIntFromNode, parseTimeFromNode, parseTimeToSeconds } from '../utils/common';
+import {
+  getBeatmapIdFromImage,
+  getTextFromNode,
+  parseIntFromNode,
+  parseTimeFromNode,
+  parseTimeToSeconds,
+} from '../utils/common';
 
 const tabs = ['Filters'];
 const descriptions = [
@@ -35,6 +41,7 @@ const Tools: React.FC = () => {
     const downloads = parseIntFromNode(node.querySelector(`li[title="Downloads"]`)) || initialFilters.minDownloads;
     const rating = parseIntFromNode(node.querySelector(`li[title="Beatmap Rating"]`)) || initialFilters.minRating;
     const duration = parseTimeFromNode(node.querySelector(`li[title="Beatmap Duration"]`)) || initialFilters.minDuration;
+    const author = getTextFromNode(node.querySelector('.details > h2 > a')) || '';
     const hasDifficulty = Object.values(Difficulty).some(
       difficulty => formData[difficulty] && node.querySelector(`.tag.${difficulty}`)
     );
@@ -46,6 +53,7 @@ const Tools: React.FC = () => {
       rating >= formData.minRating,
       duration >= parseTimeToSeconds(formData.minDuration),
       duration <= parseTimeToSeconds(formData.maxDuration),
+      !formData.excludedMappers.split(',').map(m => m.trim()).includes(author.toLowerCase()),
     ].every(Boolean);
 
     if (!predicate) {
@@ -125,6 +133,7 @@ const Tools: React.FC = () => {
   return (
     <>
       <SideSheet
+        width={480}
         isShown={isShown}
         onCloseComplete={() => setIsShown(false)}
         containerProps={{

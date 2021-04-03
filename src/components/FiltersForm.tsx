@@ -1,4 +1,4 @@
-import { Button, Checkbox, TextInputField, Pane, FormField } from 'evergreen-ui';
+import { Button, Checkbox, TextInputField, Pane, FormField, TextareaField } from 'evergreen-ui';
 import React from 'react';
 import { Controller, UseFormMethods } from 'react-hook-form';
 
@@ -12,6 +12,7 @@ export interface FiltersFormData extends DifficultyFormData {
   minDuration: string;
   maxDuration: string;
   makePlaylist: boolean;
+  excludedMappers: string;
 }
 
 interface FiltersFormProps extends UseFormMethods {
@@ -39,7 +40,7 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         defaultValue={initialState.minUpvotes}
         min={0}
         ref={register({ valueAsNumber: true, min: 0 })}
-        width={140}
+        width={200}
         marginRight={16}
       />
       <TextInputField
@@ -50,7 +51,7 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         defaultValue={initialState.maxDownvotes}
         min={0}
         ref={register({ valueAsNumber: true, min: 0 })}
-        width={140}
+        width={200}
       />
     </Pane>
     <Pane display="flex">
@@ -62,7 +63,7 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         defaultValue={initialState.minDownloads}
         min={0}
         ref={register({ valueAsNumber: true, min: 0 })}
-        width={140}
+        width={200}
         marginRight={16}
       />
       <TextInputField
@@ -74,7 +75,7 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         min={0}
         max={100}
         ref={register({ valueAsNumber: true, min: 0, max: 100 })}
-        width={140}
+        width={200}
       />
     </Pane>
     <Pane display="flex">
@@ -86,7 +87,7 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         step="1"
         defaultValue={initialState.minDuration}
         ref={register()}
-        width={140}
+        width={200}
         marginRight={16}
       />
       <TextInputField
@@ -97,9 +98,17 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         step="1"
         defaultValue={initialState.maxDuration}
         ref={register()}
-        width={140}
+        width={200}
       />
     </Pane>
+    <TextareaField
+      label="Exclude mappers"
+      placeholder="John, Eric"
+      name="excludedMappers"
+      defaultValue={initialState.excludedMappers}
+      ref={register({ setValueAs: value => value.toLowerCase() })}
+      width={420}
+    />
     <FormField label="Difficulty">
       <Pane display="flex">
         {Object.entries(Difficulty).map(([key, value], i, arr) => (
@@ -130,7 +139,6 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         render={({ onChange, value, ref }) => (
           <Checkbox
             label="Make a playlist?"
-            marginTop={4}
             onChange={e => onChange(e.target.checked)}
             checked={value}
             ref={ref}
@@ -139,7 +147,11 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
       />
     </FormField>
     <Pane>
-      <Button type="submit" marginRight={16}>Apply</Button>
+      <Button
+        type="submit"
+        appearance="primary"
+        marginRight={16}
+      >Apply</Button>
       <Button
         intent="warning"
         appearance="primary"
