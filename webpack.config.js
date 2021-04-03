@@ -7,7 +7,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
   entry: './src/index.tsx',
   target: 'web',
-  mode: 'production',
+  mode: 'development',
   devtool: false,
   output: {
     path: path.join(__dirname, 'dist'),
@@ -16,6 +16,8 @@ module.exports = {
   externals: {
     'react': 'React',
     'react-dom': 'ReactDOM',
+    'evergreen-ui': 'EvergreenUI',
+    'react-hook-form': 'ReactHookForm',
   },
   resolve: {
     extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
