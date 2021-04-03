@@ -100,22 +100,28 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         width={140}
       />
     </Pane>
-    {Object.entries(Difficulty).map(([key, value]) => (
-      <Controller
-        key={value}
-        control={control}
-        name={value}
-        defaultValue={initialState[value]}
-        render={({ onChange, value, ref }) => (
-          <Checkbox
-            label={key.replace('_', ' ')}
-            onChange={e => onChange(e.target.checked)}
-            checked={value}
-            ref={ref}
+    <FormField label="Difficulty">
+      <Pane display="flex">
+        {Object.entries(Difficulty).map(([key, value], i, arr) => (
+          <Controller
+            key={value}
+            control={control}
+            name={value}
+            defaultValue={initialState[value]}
+            render={({ onChange, value, ref }) => (
+              <Checkbox
+                label={key.replace('_', ' ')}
+                onChange={e => onChange(e.target.checked)}
+                checked={value}
+                marginRight={i === arr.length - 1 ? 0 : 16}
+                marginTop={4}
+                ref={ref}
+              />
+            )}
           />
-        )}
-      />
-    ))}
+        ))}
+      </Pane>
+    </FormField>
     <FormField label="Playlist">
       <Controller
         control={control}
@@ -124,6 +130,7 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         render={({ onChange, value, ref }) => (
           <Checkbox
             label="Make a playlist?"
+            marginTop={4}
             onChange={e => onChange(e.target.checked)}
             checked={value}
             ref={ref}
