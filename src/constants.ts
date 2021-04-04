@@ -8,6 +8,11 @@ export enum Difficulty {
   EXPERT_PLUS = 'is-expert-plus',
 }
 
+export enum DownloadOption {
+  ARCHIVE = 'Archive',
+  MOD_ASSISTANT = 'Mod Assistant',
+}
+
 export const initialFilters = {
   minUpvotes: 0,
   maxDownvotes: 9999,
@@ -17,6 +22,7 @@ export const initialFilters = {
   maxDuration: '23:59:59',
   excludedMappers: '',
   download: false,
+  downloadOption: DownloadOption.ARCHIVE,
   ...Object.values(Difficulty).reduce((acc, difficulty) => ({
     ...acc,
     [difficulty]: true,

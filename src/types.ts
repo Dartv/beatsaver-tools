@@ -1,4 +1,4 @@
-import { Difficulty } from './constants';
+import { Difficulty, DownloadOption } from './constants';
 
 export type DifficultyFormData = { [key in Difficulty]: boolean };
 
@@ -23,4 +23,5 @@ export interface FiltersFormData extends DifficultyFormData {
   maxDuration: string;
   excludedMappers: string;
   download: boolean;
+  downloadOption: DownloadOption;
 }

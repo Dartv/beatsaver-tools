@@ -3,7 +3,7 @@ import { Pane, IconButton, SideSheet, Heading, Paragraph, Tablist, Tab, toaster 
 import { useForm } from 'react-hook-form';
 
 import FiltersForm from './FiltersForm';
-import { Difficulty, initialFilters, FILTERS_KEY } from '../constants';
+import { Difficulty, initialFilters, FILTERS_KEY, DownloadOption } from '../constants';
 import { downloadFile, getElementByXPath, getInitialFilters, parseBeatmapFromNode, parseTimeToSeconds } from '../utils/common';
 import { Beatmap, FiltersFormData } from '../types';
 
@@ -17,7 +17,6 @@ const passesFilters = (map: Beatmap, filters: FiltersFormData) => {
   const hasDifficulty = Object.values(Difficulty).some(
     difficulty => filters[difficulty] && map.difficulties.includes(difficulty)
   );
-  console.log(filters.minUpvotes, map.upvotes);
   return [
     hasDifficulty,
     !filters.minUpvotes || map.upvotes >= filters.minUpvotes,
@@ -44,10 +43,19 @@ const Tools: React.FC = () => {
     const map = parseBeatmapFromNode(node);
 
     if (passesFilters(map, filters)) {
-      if (filters.download) {
-        const dl = getElementByXPath('.//a[contains(text(), "Download")]', node);
+      if (filters.download && !seenMaps.current.has(map.id)) {
+        const dlOption = filters.downloadOption || DownloadOption.ARCHIVE;
+        let dlText: string;
 
-        if (dl instanceof HTMLAnchorElement && !seenMaps.current.has(map.id)) {
+        if (dlOption === DownloadOption.ARCHIVE) {
+          dlText = 'Download';
+        } else {
+          dlText = 'OneClick';
+        }
+
+        const dl = getElementByXPath(`.//a[contains(text(), "${dlText}")]`, node);
+
+        if (dl instanceof HTMLAnchorElement) {
           dl.click();
         }
       }
