@@ -17,15 +17,16 @@ const passesFilters = (map: Beatmap, filters: FiltersFormData) => {
   const hasDifficulty = Object.values(Difficulty).some(
     difficulty => filters[difficulty] && map.difficulties.includes(difficulty)
   );
+  console.log(filters.minUpvotes, map.upvotes);
   return [
     hasDifficulty,
-    map.upvotes >= filters.minUpvotes,
-    map.downvotes <= filters.maxDownvotes,
-    map.downloads >= filters.minDownloads,
-    map.rating >= filters.minRating,
-    map.duration >= parseTimeToSeconds(filters.minDuration),
-    map.duration <= parseTimeToSeconds(filters.maxDuration),
-    !filters.excludedMappers.split(',').map(m => m.trim()).includes(map.author.toLowerCase()),
+    !filters.minUpvotes || map.upvotes >= filters.minUpvotes,
+    !filters.maxDownvotes || map.downvotes <= filters.maxDownvotes,
+    !filters.minDownloads || map.downloads >= filters.minDownloads,
+    !filters.minRating || map.rating >= filters.minRating,
+    !filters.minDuration || map.duration >= parseTimeToSeconds(filters.minDuration),
+    !filters.maxDuration || map.duration <= parseTimeToSeconds(filters.maxDuration),
+    !filters.excludedMappers || !filters.excludedMappers.split(',').map(m => m.trim()).includes(map.author.toLowerCase()),
   ].every(Boolean);
 };
 

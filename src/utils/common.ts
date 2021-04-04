@@ -3,7 +3,7 @@ import { Beatmap, FiltersFormData } from '../types';
 
 export const getTextFromNode = (node: Node | null): string => node?.textContent?.split(' ')[0] || '';
 
-export const parseIntFromNode = (node: Node | null): number => parseInt(getTextFromNode(node), 10);
+export const parseIntFromNode = (node: Node | null): number => parseInt(getTextFromNode(node).replace(',', ''), 10);
 
 export const parseTimeToSeconds = (time = '00:00:00'): number => {
   const [hours = 0, minutes = 0, seconds = 0] = time.split(':').map(Number);
@@ -20,10 +20,10 @@ export const getBeatmapIdFromImage = (
 ): string | null => node?.getAttribute('src')?.match(/\/(\w+)\./)?.[1] || null;
 
 export const parseBeatmapFromNode = (node: Element): Beatmap => {
-  const upvotes = parseIntFromNode(node.querySelector(`li[title="Upvotes"]`)) || initialFilters.minUpvotes;
+  const upvotes = parseIntFromNode(node.querySelector(`li[title="Upvotes"]`)) || Number.MAX_SAFE_INTEGER;
   const downvotes = parseIntFromNode(node.querySelector(`li[title="Downvotes"]`)) || initialFilters.maxDownvotes;
-  const downloads = parseIntFromNode(node.querySelector(`li[title="Downloads"]`)) || initialFilters.minDownloads;
-  const rating = parseIntFromNode(node.querySelector(`li[title="Beatmap Rating"]`)) || initialFilters.minRating;
+  const downloads = parseIntFromNode(node.querySelector(`li[title="Downloads"]`)) || Number.MAX_SAFE_INTEGER;
+  const rating = parseIntFromNode(node.querySelector(`li[title="Beatmap Rating"]`)) || 100;
   const duration = parseTimeFromNode(node.querySelector(`li[title="Beatmap Duration"]`)) ||
     parseTimeToSeconds(initialFilters.maxDuration);
   const author = getTextFromNode(node.querySelector('.details > h2 > a')) || '';
