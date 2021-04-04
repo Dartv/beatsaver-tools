@@ -3,6 +3,7 @@ import React from 'react';
 import { Controller, UseFormMethods } from 'react-hook-form';
 
 import { Difficulty, DifficultyFormData } from '../constants';
+import DurationInput from './DurationInput';
 
 export interface FiltersFormData extends DifficultyFormData {
   minUpvotes: number;
@@ -84,26 +85,34 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         />
       </Pane>
       <Pane display="flex">
-        <TextInputField
-          label="Minimum Duration"
-          placeholder="Minimum Duration"
+        <Controller
+          control={control}
           name="minDuration"
-          type="time"
-          step="1"
           defaultValue={initialState.minDuration}
-          ref={register()}
-          width={200}
-          marginRight={16}
+          render={props => (
+            <DurationInput {...props}>
+              <TextInputField
+                label="Minimum Duration"
+                placeholder="Minimum Duration"
+                width={200}
+                marginRight={16}
+              />
+            </DurationInput>
+          )}
         />
-        <TextInputField
-          label="Maximum Duration"
-          placeholder="Maximum Duration"
+        <Controller
+          control={control}
           name="maxDuration"
-          type="time"
-          step="1"
           defaultValue={initialState.maxDuration}
-          ref={register()}
-          width={200}
+          render={props => (
+            <DurationInput {...props}>
+              <TextInputField
+                label="Maximum Duration"
+                placeholder="Maximum Duration"
+                width={200}
+              />
+            </DurationInput>
+          )}
         />
       </Pane>
       <TextareaField
