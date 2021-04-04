@@ -94,14 +94,14 @@ const Tools: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    maps.current.clear();
-
     // can't use reset here because of the bug in react-hook-form
     Object.entries(initialFilters).forEach(([key, value]) => {
       filtersForm.setValue(key as keyof FiltersFormData, value);
     });
 
     onSubmitFilters();
+
+    maps.current.clear();
 
     observer.current?.disconnect();
   };
