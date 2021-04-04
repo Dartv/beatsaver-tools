@@ -154,14 +154,16 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
       >
         Apply
       </Button>
-      <Button
-        intent="warning"
-        appearance="primary"
-        marginRight={16}
-        onClick={onStop}
-      >
-        Stop
-      </Button>
+      {formState.isSubmitted && (
+        <Button
+          intent="warning"
+          appearance="primary"
+          marginRight={16}
+          onClick={onStop}
+        >
+          Stop
+        </Button>
+      )}
       <Button
         intent="danger"
         appearance="primary"
