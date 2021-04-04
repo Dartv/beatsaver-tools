@@ -102,6 +102,8 @@ const Tools: React.FC = () => {
     });
 
     onSubmitFilters();
+
+    observer.current?.disconnect();
   };
   const onFiltersExport = (e: React.SyntheticEvent) => {
     e.preventDefault();
