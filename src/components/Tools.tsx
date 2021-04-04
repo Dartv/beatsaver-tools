@@ -41,7 +41,8 @@ const Tools: React.FC = () => {
     const downvotes = parseIntFromNode(node.querySelector(`li[title="Downvotes"]`)) || initialFilters.maxDownvotes;
     const downloads = parseIntFromNode(node.querySelector(`li[title="Downloads"]`)) || initialFilters.minDownloads;
     const rating = parseIntFromNode(node.querySelector(`li[title="Beatmap Rating"]`)) || initialFilters.minRating;
-    const duration = parseTimeFromNode(node.querySelector(`li[title="Beatmap Duration"]`)) || initialFilters.minDuration;
+    const duration = parseTimeFromNode(node.querySelector(`li[title="Beatmap Duration"]`)) ||
+      parseTimeToSeconds(initialFilters.maxDuration);
     const author = getTextFromNode(node.querySelector('.details > h2 > a')) || '';
     const hasDifficulty = Object.values(Difficulty).some(
       difficulty => filters[difficulty] && node.querySelector(`.tag.${difficulty}`)

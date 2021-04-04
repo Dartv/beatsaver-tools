@@ -9,7 +9,7 @@ export const parseTimeToSeconds = (time = '00:00:00'): number => {
 
 export const parseTimeFromNode = (node: Node | null): number => {
   const time = getTextFromNode(node);
-  return parseTimeToSeconds(`00:` + time);
+  return parseTimeToSeconds(time.padStart(8, '00:'));
 };
 
 export const getBeatmapIdFromImage = (
