@@ -17,6 +17,7 @@ module.exports = {
     'react-dom': 'ReactDOM',
     'evergreen-ui': 'EvergreenUI',
     'react-hook-form': 'ReactHookForm',
+    'react-input-mask': 'ReactInputMask',
   },
   resolve: {
     extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
