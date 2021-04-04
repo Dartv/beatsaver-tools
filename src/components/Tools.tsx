@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import FiltersForm from './FiltersForm';
 import { Difficulty, initialFilters, FILTERS_KEY } from '../constants';
-import { downloadFile, getInitialFilters, parseBeatmapFromNode, parseTimeToSeconds } from '../utils/common';
+import { downloadFile, getElementByXPath, getInitialFilters, parseBeatmapFromNode, parseTimeToSeconds } from '../utils/common';
 import { Beatmap, FiltersFormData } from '../types';
 
 const tabs = ['Filters'];
@@ -35,15 +35,26 @@ const Tools: React.FC = () => {
   const observer = useRef<MutationObserver>();
   const filtersForm = useForm<FiltersFormData>();
   const filtersFormData = useRef<FiltersFormData>(getInitialFilters());
+  const seenMaps = useRef<Set<string>>(new Set());
   const maps = useRef<Map<string, Beatmap>>(new Map());
   const getFilters = () => ({ ...initialFilters, ...filtersFormData.current });
   const filter = (node: Element) => {
     const filters = getFilters();
     const map = parseBeatmapFromNode(node);
 
-    if (!passesFilters(map, filters)) {
+    if (passesFilters(map, filters)) {
+      if (filters.download) {
+        const dl = getElementByXPath('.//a[contains(text(), "Download")]', node);
+
+        if (dl instanceof HTMLAnchorElement && !seenMaps.current.has(map.id)) {
+          dl.click();
+        }
+      }
+    } else {
       node.setAttribute('style', 'display: none;');
     }
+
+    seenMaps.current.add(map.id);
 
     if (map.hash && map.hash !== 'placeholder') {
       maps.current.set(map.id, map);

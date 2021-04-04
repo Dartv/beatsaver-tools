@@ -22,4 +22,5 @@ export interface FiltersFormData extends DifficultyFormData {
   minDuration: string;
   maxDuration: string;
   excludedMappers: string;
+  download: boolean;
 }

@@ -133,6 +133,19 @@ const FiltersForm: React.FC<FiltersFormProps> = ({
         ))}
       </Pane>
     </FormField>
+    <Controller
+      control={control}
+      name="download"
+      defaultValue={false}
+      render={({ onChange, value, ref }) => (
+        <Checkbox
+          label="Automatically download beatmaps?"
+          onChange={e => onChange(e.target.checked)}
+          checked={value}
+          ref={ref}
+        />
+      )}
+    />
     <Pane display="flex" justifyContent={formState.isSubmitted ? 'space-between' : 'flex-start'}>
       <Button
         type="submit"

@@ -72,3 +72,11 @@ export const getInitialFilters = (): FiltersFormData => {
     return initialFilters;
   }
 };
+
+export const getElementByXPath = (selector: string, node: Node): Node | null => document.evaluate(
+  selector,
+  node,
+  null,
+  XPathResult.FIRST_ORDERED_NODE_TYPE,
+  null,
+).singleNodeValue;

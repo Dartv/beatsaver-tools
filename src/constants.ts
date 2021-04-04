@@ -16,6 +16,7 @@ export const initialFilters = {
   minDuration: '00:00:00',
   maxDuration: '23:59:59',
   excludedMappers: '',
+  download: false,
   ...Object.values(Difficulty).reduce((acc, difficulty) => ({
     ...acc,
     [difficulty]: true,
