@@ -21,7 +21,5 @@ export interface FiltersFormData extends DifficultyFormData {
   minRating: number;
   minDuration: string;
   maxDuration: string;
-  makePlaylist: boolean;
   excludedMappers: string;
-  playlistName: string;
 }
