@@ -58,7 +58,7 @@ const Tools: React.FC = () => {
     ].every(Boolean);
 
     if (!predicate) {
-      node.parentNode?.removeChild(node);
+      node.setAttribute('style', 'display: none;');
     } else if (filters.makePlaylist) {
       const beatmapId = getBeatmapIdFromImage(node.querySelector('.cover img'));
 
