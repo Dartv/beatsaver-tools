@@ -35,7 +35,6 @@ const Tools: React.FC = () => {
   const observer = useRef<MutationObserver>();
   const filtersForm = useForm<FiltersFormData>();
   const filtersFormData = useRef<FiltersFormData>(getInitialFilters());
-  const playlist = useRef<Set<string>>(new Set());
   const maps = useRef<Map<string, Beatmap>>(new Map());
   const getFilters = () => ({ ...initialFilters, ...filtersFormData.current });
   const filter = (node: Element) => {
@@ -44,8 +43,6 @@ const Tools: React.FC = () => {
 
     if (!passesFilters(map, filters)) {
       node.setAttribute('style', 'display: none;');
-    } else if (map.hash) {
-      playlist.current.add(map.hash);
     }
 
     if (map.hash) {
@@ -83,6 +80,8 @@ const Tools: React.FC = () => {
   const onFiltersSubmit = filtersForm.handleSubmit(() => {
     onSubmitFilters();
 
+    setIsShown(false);
+
     toaster.notify('Beatmaps that do not pass filters will get filtered out. Click "stop" to cancel.');
   });
   const onFiltersStop = (e: React.SyntheticEvent) => {
@@ -90,29 +89,12 @@ const Tools: React.FC = () => {
     e.stopPropagation();
 
     observer.current?.disconnect();
-
-    if (playlist.current.size) {
-      const formData = filtersForm.getValues();
-      const date = new Date();
-      const createdAt = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-      const playlistName = formData.playlistName || `Playlist created by Beatsaver Tools at ${createdAt}`;
-      const playlistData = {
-        playlistTitle: 'test',
-        playlistAuthor: 'Beatsaver Tools',
-        playlistDescription: 'Playlist created by Beatsaver Tools',
-        image: logo,
-        songs: Array.from(playlist.current).map(hash => ({ hash })),
-      };
-      downloadFile(playlistName, JSON.stringify(playlistData));
-
-      playlist.current.clear();
-    }
   };
   const onFiltersReset = (e: React.SyntheticEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    playlist.current.clear();
+    maps.current.clear();
 
     // can't use reset here because of the bug in react-hook-form
     Object.entries(initialFilters).forEach(([key, value]) => {
@@ -120,6 +102,37 @@ const Tools: React.FC = () => {
     });
 
     onSubmitFilters();
+  };
+  const onFiltersExport = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const playlistTitle = window.prompt('Enter playlist name');
+
+    if (playlistTitle) {
+      const hashes = new Set<string>();
+      const filters = { ...initialFilters, ...filtersForm.getValues() };
+
+      maps.current.forEach((map) => {
+        if (map.hash && passesFilters(map, filters)) {
+          hashes.add(map.hash);
+        }
+      });
+
+      if (hashes.size) {
+        const date = new Date();
+        const createdAt = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        const playlistData = {
+          playlistTitle,
+          playlistAuthor: 'Beatsaver Tools',
+          playlistDescription: `Playlist created by Beatsaver Tools at ${createdAt}`,
+          image: logo,
+          songs: Array.from(hashes).map(hash => ({ hash })),
+        };
+
+        downloadFile(`${playlistTitle}.json`, JSON.stringify(playlistData));
+      }
+    }
   };
 
   useEffect(() => {
@@ -181,6 +194,7 @@ const Tools: React.FC = () => {
             onSubmit={onFiltersSubmit}
             onStop={onFiltersStop}
             onReset={onFiltersReset}
+            onExport={onFiltersExport}
             initialState={filtersFormData.current}
           />
         </Pane>
