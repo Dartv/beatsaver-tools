@@ -45,7 +45,7 @@ const Tools: React.FC = () => {
       node.setAttribute('style', 'display: none;');
     }
 
-    if (map.hash) {
+    if (map.hash && map.hash !== 'placeholder') {
       maps.current.set(map.id, map);
     }
   };
