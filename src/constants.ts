@@ -10,7 +10,7 @@ export type DifficultyFormData = { [key in Difficulty]: boolean };
 
 export const initialFilters = {
   minUpvotes: 0,
-  maxDownvotes: Number.MAX_SAFE_INTEGER,
+  maxDownvotes: 9999,
   minDownloads: 0,
   minRating: 0,
   minDuration: '00:00:00',
