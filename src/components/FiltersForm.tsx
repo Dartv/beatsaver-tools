@@ -2,20 +2,9 @@ import { Button, Checkbox, TextInputField, Pane, FormField, TextareaField } from
 import React from 'react';
 import { Controller, UseFormMethods } from 'react-hook-form';
 
-import { Difficulty, DifficultyFormData } from '../constants';
+import { Difficulty } from '../constants';
+import { FiltersFormData } from '../types';
 import DurationInput from './DurationInput';
-
-export interface FiltersFormData extends DifficultyFormData {
-  minUpvotes: number;
-  maxDownvotes: number;
-  minDownloads: number;
-  minRating: number;
-  minDuration: string;
-  maxDuration: string;
-  makePlaylist: boolean;
-  excludedMappers: string;
-  playlistName: string;
-}
 
 interface FiltersFormProps extends UseFormMethods {
   onSubmit: React.FormEventHandler<HTMLFormElement>;

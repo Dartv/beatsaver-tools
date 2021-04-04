@@ -1,3 +1,5 @@
+import { DifficultyFormData } from './types';
+
 export enum Difficulty {
   EASY = 'is-easy',
   NORMAL = 'is-dark',
@@ -5,8 +7,6 @@ export enum Difficulty {
   EXPERT = 'is-expert',
   EXPERT_PLUS = 'is-expert-plus',
 }
-
-export type DifficultyFormData = { [key in Difficulty]: boolean };
 
 export const initialFilters = {
   minUpvotes: 0,

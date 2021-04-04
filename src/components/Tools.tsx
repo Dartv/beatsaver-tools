@@ -2,16 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pane, IconButton, SideSheet, Heading, Paragraph, Tablist, Tab, toaster } from 'evergreen-ui';
 import { useForm } from 'react-hook-form';
 
-import FiltersForm, { FiltersFormData } from './FiltersForm';
+import FiltersForm from './FiltersForm';
 import { Difficulty, initialFilters, FILTERS_KEY } from '../constants';
-import {
-  downloadFile,
-  getBeatmapIdFromImage,
-  getTextFromNode,
-  parseIntFromNode,
-  parseTimeFromNode,
-  parseTimeToSeconds,
-} from '../utils/common';
+import { downloadFile, getInitialFilters, parseBeatmapFromNode, parseTimeToSeconds } from '../utils/common';
+import { Beatmap, FiltersFormData } from '../types';
 
 const tabs = ['Filters'];
 const descriptions = [
@@ -19,13 +13,20 @@ const descriptions = [
 ];
 const logo = window.GM_getResourceURL('logo');
 
-const getInitialFilters = (): FiltersFormData => {
-  try {
-    const state = localStorage.getItem(FILTERS_KEY) || '';
-    return JSON.parse(state);
-  } catch (err) {
-    return initialFilters;
-  }
+const passesFilters = (map: Beatmap, filters: FiltersFormData) => {
+  const hasDifficulty = Object.values(Difficulty).some(
+    difficulty => filters[difficulty] && map.difficulties.includes(difficulty)
+  );
+  return [
+    hasDifficulty,
+    map.upvotes >= filters.minUpvotes,
+    map.downvotes <= filters.maxDownvotes,
+    map.downloads >= filters.minDownloads,
+    map.rating >= filters.minRating,
+    map.duration >= parseTimeToSeconds(filters.minDuration),
+    map.duration <= parseTimeToSeconds(filters.maxDuration),
+    !filters.excludedMappers.split(',').map(m => m.trim()).includes(map.author.toLowerCase()),
+  ].every(Boolean);
 };
 
 const Tools: React.FC = () => {
@@ -35,46 +36,38 @@ const Tools: React.FC = () => {
   const filtersForm = useForm<FiltersFormData>();
   const filtersFormData = useRef<FiltersFormData>(getInitialFilters());
   const playlist = useRef<Set<string>>(new Set());
-  const maps = useRef<Map<string, any>>(new Map());
+  const maps = useRef<Map<string, Beatmap>>(new Map());
+  const getFilters = () => ({ ...initialFilters, ...filtersFormData.current });
   const filter = (node: Element) => {
-    const filters = { ...initialFilters, ...filtersFormData.current };
-    const upvotes = parseIntFromNode(node.querySelector(`li[title="Upvotes"]`)) || initialFilters.minUpvotes;
-    const downvotes = parseIntFromNode(node.querySelector(`li[title="Downvotes"]`)) || initialFilters.maxDownvotes;
-    const downloads = parseIntFromNode(node.querySelector(`li[title="Downloads"]`)) || initialFilters.minDownloads;
-    const rating = parseIntFromNode(node.querySelector(`li[title="Beatmap Rating"]`)) || initialFilters.minRating;
-    const duration = parseTimeFromNode(node.querySelector(`li[title="Beatmap Duration"]`)) ||
-      parseTimeToSeconds(initialFilters.maxDuration);
-    const author = getTextFromNode(node.querySelector('.details > h2 > a')) || '';
-    const hasDifficulty = Object.values(Difficulty).some(
-      difficulty => filters[difficulty] && node.querySelector(`.tag.${difficulty}`)
-    );
-    const predicate = [
-      hasDifficulty,
-      upvotes >= filters.minUpvotes,
-      downvotes <= filters.maxDownvotes,
-      downloads >= filters.minDownloads,
-      rating >= filters.minRating,
-      duration >= parseTimeToSeconds(filters.minDuration),
-      duration <= parseTimeToSeconds(filters.maxDuration),
-      !filters.excludedMappers.split(',').map(m => m.trim()).includes(author.toLowerCase()),
-    ].every(Boolean);
+    const filters = getFilters();
+    const map = parseBeatmapFromNode(node);
 
-    if (!predicate) {
+    if (!passesFilters(map, filters)) {
       node.setAttribute('style', 'display: none;');
-    } else if (filters.makePlaylist) {
-      const beatmapId = getBeatmapIdFromImage(node.querySelector('.cover img'));
+    } else if (map.hash) {
+      playlist.current.add(map.hash);
+    }
 
-      if (beatmapId && beatmapId !== 'placeholder') {
-        playlist.current.add(beatmapId);
-      }
+    if (map.hash) {
+      maps.current.set(map.id, map);
     }
   };
   const filterAll = () => {
+    const filters = getFilters();
     const nodes = Array.from(document.querySelectorAll('.beatmap-result:not(.beatmap-result-hidden)'));
+
     nodes.forEach(filter);
+
+    maps.current.forEach((map) => {
+      if (passesFilters(map, filters)) {
+        const node = document.getElementById(map.id);
+
+        node?.removeAttribute('style');
+      }
+    });
   };
-  const onSubmitFilters = (filters: FiltersFormData) => {
-    filtersFormData.current = filters;
+  const onSubmitFilters = () => {
+    filtersFormData.current = filtersForm.getValues();
 
     filterAll();
 
@@ -85,14 +78,12 @@ const Tools: React.FC = () => {
       attributeOldValue: true,
     });
 
-    localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(filtersFormData.current));
   };
   const onFiltersSubmit = filtersForm.handleSubmit(() => {
-    const filters = filtersForm.getValues();
+    onSubmitFilters();
 
-    onSubmitFilters(filters);
-
-    toaster.notify('Beatmaps that do not pass filters will not get filtered out. Click "stop" to cancel.');
+    toaster.notify('Beatmaps that do not pass filters will get filtered out. Click "stop" to cancel.');
   });
   const onFiltersStop = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -128,7 +119,7 @@ const Tools: React.FC = () => {
       filtersForm.setValue(key as keyof FiltersFormData, value);
     });
 
-    onSubmitFilters(filtersForm.getValues());
+    onSubmitFilters();
   };
 
   useEffect(() => {
