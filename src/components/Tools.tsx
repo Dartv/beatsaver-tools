@@ -35,6 +35,7 @@ const Tools: React.FC = () => {
   const filtersForm = useForm<FiltersFormData>();
   const filtersFormData = useRef<FiltersFormData>(getInitialFilters());
   const playlist = useRef<Set<string>>(new Set());
+  const maps = useRef<Map<string, any>>(new Map());
   const filter = (node: Element) => {
     const filters = { ...initialFilters, ...filtersFormData.current };
     const upvotes = parseIntFromNode(node.querySelector(`li[title="Upvotes"]`)) || initialFilters.minUpvotes;
@@ -91,9 +92,7 @@ const Tools: React.FC = () => {
 
     onSubmitFilters(filters);
 
-    if (filters.makePlaylist) {
-      toaster.notify('Playlist will be created when you click "stop"');
-    }
+    toaster.notify('Beatmaps that do not pass filters will not get filtered out. Click "stop" to cancel.');
   });
   const onFiltersStop = (e: React.SyntheticEvent) => {
     e.preventDefault();
